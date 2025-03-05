@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>جوهرة الذكر - المسبحة الذكية</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0F9690;
+      --secondary: #072E33;
+      --accent: #6DA5C0;
+      --text: #ffffff;
+      --gold: #FFD700;
+      --background-light: radial-gradient(circle at center, #072E33, #05161A);
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Tajawal', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      background: var(--background-light);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background 0.5s, color 0.5s;
+      font-size: 1em;
+    }
+    section {
+      display: none;
+      padding: 5rem 1rem 10rem;
+      min-height: calc(100vh - 120px);
+    }
+    section.active-page {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .app-bar {
+      background: linear-gradient(90deg, var(--secondary), var(--primary));
+      padding: 0.75rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 1000;
+    }
+    .app-title {
+      text-align: center;
+      font-size: clamp(1.5em, 5vw, 2em);
+      letter-spacing: 1px;
+      text-shadow: 0 0 10px var(--accent);
+    }
+    .nav-container {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      background: rgba(7, 46, 51, 0.9);
+      padding: 0.75rem;
+      backdrop-filter: blur(15px);
+      box-shadow: 0 -2px 20px rgba(13, 202, 240, 0.2);
+      z-index: 1000;
+    }
+    .nav-btns {
+      width: clamp(60px, 18vw, 70px);
+      height: clamp(60px, 18vw, 70px);
+      border-radius: 50%;
+      border: 2px solid var(--accent);
+      background: transparent;
+      color: var(--text);
+      font-size: clamp(1.2em, 4vw, 1.8em);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-shadow: 0 0 5px var(--accent);
+    }
+    .nav-btns:hover,
+    .nav-btns.active {
+      background: var(--primary);
+      border-color: var(--gold);
+      box-shadow: 0 0 15px var(--primary);
+      transform: scale(1.1);
+    }
+    .tasbih-section {
+      perspective: 1000px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .main-tasbih {
+      width: clamp(280px, 90vw, 340px);
+      height: clamp(280px, 90vw, 340px);
+      margin: 2rem auto;
+      position: relative;
+      transform-style: preserve-3d;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .bead {
+      position: absolute;
+      background: radial-gradient(circle, var(--gold), var(--primary));
+      border-radius: 50%;
+      border: 2px solid var(--accent);
+      cursor: pointer;
+      transition: transform 0.3s, background 0.3s;
+      box-shadow: 0 0 10px var(--primary);
+    }
+    .bead:hover {
+      transform: scale(1.2) rotate(360deg);
+      background: radial-gradient(circle, var(--accent), var(--gold));
+    }
+    .bead.animate {
+      transform: scale(1.4);
+    }
+    .counter-display {
+      font-size: clamp(2.5em, 10vw, 4em);
+      text-align: center;
+      margin: 1rem 0;
+      color: var(--gold);
+      text-shadow: 0 0 20px var(--gold);
+      transition: color 0.5s;
+    }
+    .counter-display.target-reached {
+      color: #00ff00;
+      animation: glow 1s infinite alternate;
+    }
+    @keyframes glow {
+      from { text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00; }
+      to { text-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00, 0 0 40px #00ff00; }
+    }
+    .dhikr-phrase {
+      font-family: 'Amiri', serif;
+      font-size: clamp(1.5em, 5vw, 2.5em);
+      text-align: center;
+      margin: 1rem 0;
+      color: var(--gold);
+      text-shadow: 0 0 10px var(--gold);
+    }
+    .controls {
+      text-align: center;
+      margin: 1.5rem 0;
+    }
+    /* تصميم أزرار الإجراءات المُخصصة */
+    .action-btn {
+      margin: 0.5rem;
+      padding: 0.75em 1.5em;
+      background: linear-gradient(45deg, var(--primary), var(--accent));
+      border: none;
+      border-radius: 8px;
+      color: var(--text);
+      cursor: pointer;
+      font-size: clamp(1em, 3vw, 1.2em);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .action-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      padding: 5rem 1rem 10rem;
+      width: 100%;
+      max-width: 1200px;
+    }
+    .stat-card {
+      background: linear-gradient(145deg, var(--secondary), var(--primary));
+      padding: 1.5rem;
+      border-radius: 15px;
+      border: 1px solid var(--accent);
+      box-shadow: 0 0 15px rgba(13, 202, 240, 0.1);
+      transition: transform 0.3s;
+    }
+    .stat-card:hover {
+      transform: translateY(-5px);
+    }
+    .stat-title {
+      color: var(--accent);
+      font-size: clamp(1em, 3vw, 1.3em);
+      margin-bottom: 0.75rem;
+    }
+    .stat-value {
+      font-size: clamp(1.8em, 5vw, 2.8em);
+      color: var(--gold);
+      text-shadow: 0 0 10px var(--gold);
+    }
+    .settings-panel {
+      max-width: 90%;
+      width: 100%;
+      max-width: 800px;
+      margin: 5rem auto 10rem;
+      background: rgba(7, 46, 51, 0.9);
+      padding: 1.5rem;
+      border-radius: 15px;
+      backdrop-filter: blur(10px);
+    }
+    /* تمت إزالة خاصية تشغيل الصوت من الإعدادات */
+    .setting-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem;
+      margin: 0.75rem 0;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      font-size: clamp(1em, 3vw, 1.2em);
+    }
+    .setting-item input[type="text"],
+    .setting-item input[type="number"],
+    .setting-item select {
+      padding: 0.5rem;
+      border-radius: 5px;
+      background: var(--secondary);
+      color: var(--text);
+      border: 1px solid var(--accent);
+      width: 60%;
+    }
+    .theme-selector {
+      display: flex;
+      gap: 0.75rem;
+    }
+    .theme-color {
+      width: clamp(35px, 8vw, 45px);
+      height: clamp(35px, 8vw, 45px);
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.3s;
+    }
+    .theme-color.active {
+      border-color: var(--gold);
+      transform: scale(1.1);
+    }
+    .custom-dhikr-list {
+      margin-top: 1.5rem;
+      margin-bottom: 2rem;
+      text-align: right;
+    }
+    .custom-dhikr-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      margin: 0.75rem 0;
+      direction: rtl;
+    }
+    .delete-dhikr-btn {
+      background: #ff4444;
+      border: none;
+      padding: 0.5rem 0.75rem;
+      border-radius: 5px;
+      cursor: pointer;
+      color: white;
+      font-size: 0.9em;
+    }
+    .switch {
+      position: relative;
+      width: 60px;
+      height: 28px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: 0.4s;
+      border-radius: 34px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: var(--primary);
+    }
+    input:checked + .slider:before {
+      transform: translateX(32px);
+    }
+    .particle {
+      position: absolute;
+      background: radial-gradient(circle, var(--gold), transparent);
+      pointer-events: none;
+      border-radius: 50%;
+      animation: explode 0.8s forwards;
+    }
+    @keyframes explode {
+      0% { transform: scale(0); opacity: 1; }
+      100% { transform: scale(2.5); opacity: 0; }
+    }
+    .achievement-alert {
+      position: fixed;
+      top: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--primary);
+      color: var(--text);
+      padding: 1.2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.5);
+      z-index: 2000;
+      animation: fadeInOut 3s forwards;
+      text-align: center;
+      max-width: 90%;
+      font-size: clamp(1em, 3vw, 1.2em);
+    }
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translate(-50%, -20px); }
+      10% { opacity: 1; transform: translate(-50%, 0); }
+      90% { opacity: 1; transform: translate(-50%, 0); }
+      100% { opacity: 0; transform: translate(-50%, -20px); }
+    }
+    @media (max-width: 600px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+      .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+      }
+      .setting-item input[type="text"],
+      .setting-item input[type="number"],
+      .setting-item select {
+        width: 100%;
+      }
+      .main-tasbih {
+        margin: 1rem auto;
+      }
+      .nav-btns {
+        width: clamp(50px, 15vw, 60px);
+        height: clamp(50px, 15vw, 60px);
+        font-size: clamp(1em, 4vw, 1.5em);
+      }
+    }
+    /* نافذة المشاركة المُخصصة */
+    #shareModal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 3000;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    #shareModal.show {
+      opacity: 1;
+    }
+    #shareModal .modal-content {
+      background: #fff;
+      color: #000;
+      padding: 1.5rem;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+    }
+    #shareModal .modal-content h3 {
+      margin-bottom: 1rem;
+    }
+    #shareModal .share-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+    #shareModal .share-option {
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      font-size: 1.5em;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+    #shareModal .share-option:hover {
+      transform: scale(1.1);
+    }
+    #shareModal .close-btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-bar">
+    <h1 class="app-title">مسبحتي</h1>
+  </div>
+
+  <section id="tasbih" class="tasbih-section active-page">
+    <div class="dhikr-phrase" id="dhikrPhrase"></div>
+    <div class="counter-display" id="counter">0</div>
+    <div class="main-tasbih" id="mainTasbih"></div>
+    <div class="controls">
+      <button class="action-btn btn-reset">إعادة تعيين</button>
+      <button class="action-btn btn-auto">التسبيح التلقائي ⏱️</button>
+    </div>
+  </section>
+
+  <section id="stats" class="stats-grid">
+    <div class="stat-card">
+      <h3 class="stat-title">المجموع الكلي</h3>
+      <div class="stat-value" id="totalStat">0</div>
+    </div>
+    <div class="stat-card">
+      <h3 class="stat-title">اليومي</h3>
+      <div class="stat-value" id="dailyStat">0</div>
+    </div>
+    <div class="stat-card">
+      <h3 class="stat-title">الدورات اليومية</h3>
+      <div class="stat-value" id="cyclesStat">0</div>
+    </div>
+    <div class="stat-card">
+      <h3 class="stat-title">نوع الذكر الحالي</h3>
+      <div class="stat-value" id="currentDhikrStat">-</div>
+    </div>
+  </section>
+
+  <section id="settings" class="settings-panel">
+    <h2>الإعدادات المتقدمة ⚙️</h2>
+    <!-- تم حذف زر تشغيل الصوت بالكامل -->
+    <div class="setting-item">
+      <span>نوع الخط</span>
+      <select id="fontFamilySelect">
+        <option value="Tajawal">Tajawal</option>
+        <option value="Amiri">Amiri</option>
+        <option value="Arial">Arial</option>
+      </select>
+    </div>
+    <div class="setting-item">
+      <span>حجم الخط</span>
+      <input type="range" id="fontSizeRange" min="12" max="24" value="16">
+    </div>
+    <div class="setting-item">
+      <span>سرعة التسبيح التلقائي (ثوان)</span>
+      <input type="number" id="autoSpeed" min="0.5" max="5" step="0.5" value="1">
+    </div>
+    <div class="setting-item">
+      <span>اختر الذكر</span>
+      <select id="dhikrSelect"></select>
+    </div>
+    <h3>إضافة ذكر مخصص</h3>
+    <div class="setting-item">
+      <span>اسم الذكر</span>
+      <input type="text" id="customDhikrName" placeholder="مثال: التسبيح">
+    </div>
+    <div class="setting-item">
+      <span>نص الذكر</span>
+      <input type="text" id="customDhikrPhrase" placeholder="مثال: سبحان الله">
+    </div>
+    <div class="setting-item">
+      <span>عدد المرات</span>
+      <input type="number" id="customDhikrTarget" min="1" placeholder="مثال: 33">
+    </div>
+    <button id="addCustomDhikr" class="action-btn">إضافة الذكر</button>
+    <button id="shareApp" class="action-btn">مشاركة التطبيق 📤</button>
+    <div class="custom-dhikr-list" id="customDhikrList"></div>
+  </section>
+
+  <!-- نافذة المشاركة المُخصصة -->
+  <div id="shareModal">
+    <div class="modal-content">
+      <h3>شارك التطبيق</h3>
+      <div class="share-options">
+        <div class="share-option" data-platform="whatsapp" title="واتساب">
+          <i class="fab fa-whatsapp"></i>
+        </div>
+        <div class="share-option" data-platform="facebook" title="فيسبوك">
+          <i class="fab fa-facebook-f"></i>
+        </div>
+        <div class="share-option" data-platform="twitter" title="تويتر">
+          <i class="fab fa-twitter"></i>
+        </div>
+        <div class="share-option" data-platform="telegram" title="تلغرام">
+          <i class="fab fa-telegram-plane"></i>
+        </div>
+        <div class="share-option" data-platform="instagram" title="انستقرام">
+          <i class="fab fa-instagram"></i>
+        </div>
+        <div class="share-option" data-platform="email" title="البريد الإلكتروني">
+          <i class="fas fa-envelope"></i>
+        </div>
+        <div class="share-option" data-platform="copy" title="نسخ الرابط">
+          <i class="fas fa-link"></i>
+        </div>
+      </div>
+      <button class="close-btn" id="closeShareModal">إغلاق</button>
+    </div>
+  </div>
+
+  <nav class="nav-container">
+    <button class="nav-btns active" data-section="tasbih"><i class="fas fa-praying-hands"></i></button>
+    <button class="nav-btns" data-section="stats"><i class="fas fa-chart-pie"></i></button>
+    <button class="nav-btns" data-section="settings"><i class="fas fa-sliders-h"></i></button>
+  </nav>
+
+  <!-- الأصوات المستخدمة -->
+  <audio id="beadClickSound" src="https://www.example.com/sounds/soft-click.mp3"></audio>
+  <audio id="targetReachedSound" src="https://assets.mixkit.co/sfx/preview/mixkit-positive-notification-266.mp3"></audio>
+  <audio id="buttonTapSound" src="https://assets.mixkit.co/sfx/preview/mixkit-soft-click-1118.mp3"></audio>
+
+  <script>
+    // دالة للتأكد مما إذا كان الجهاز يعمل بنظام Android
+    function isAndroid() {
+      return /android/i.test(navigator.userAgent);
+    }
+    let state = {
+      dhikrs: [
+        { id: 'tasbih', name: 'التسبيح', phrase: 'سبحان الله', count: 0, total: 0, daily: 0, target: 33, cycles: 0 },
+        { id: 'tahmid', name: 'التهليل', phrase: 'الحمد لله', count: 0, total: 0, daily: 0, target: 33, cycles: 0 },
+        { id: 'takhils', name: 'التكبير', phrase: 'الله أكبر', count: 0, total: 0, daily: 0, target: 33, cycles: 0 }
+      ],
+      currentDhikr: 'tasbih',
+      settings: {
+        themeColor: '#0F9690',
+        autoTasbih: false,
+        autoSpeed: 1,
+        fontFamily: 'Tajawal',
+        fontSize: 16,
+        lastResetDate: null
+      },
+      achievements: []
+    };
+    let autoInterval = null;
+    const beadClickSound = document.getElementById('beadClickSound');
+    const targetReachedSound = document.getElementById('targetReachedSound');
+    beadClickSound.volume = 0.3;
+    // تشغيل صوت النقر دائمًا
+    function playButtonSound() {
+      const sound = document.getElementById('buttonTapSound');
+      if (sound) {
+        sound.currentTime = 0;
+        sound.play();
+      }
+    }
+    // دالة فتح deep link مباشرة باستخدام intent
+    function openDeepLink(platform, shareText, shareUrl) {
+      let shareLink = "";
+      if (platform === "whatsapp") {
+        if (isAndroid()) {
+          shareLink = `intent://send?text=${shareText}%20${shareUrl}#Intent;scheme=whatsapp;package=com.whatsapp;end`;
+        } else {
+          shareLink = `whatsapp://send?text=${shareText}%20${shareUrl}`;
+        }
+      } else if (platform === "facebook") {
+        if (isAndroid()) {
+          shareLink = `intent://facewebmodal/f?href=${shareUrl}#Intent;scheme=https;package=com.facebook.katana;end`;
+        } else {
+          shareLink = `fb://facewebmodal/f?href=${shareUrl}`;
+        }
+      } else if (platform === "twitter") {
+        if (isAndroid()) {
+          shareLink = `intent://post?message=${shareText}%20${shareUrl}#Intent;scheme=twitter;package=com.twitter.android;end`;
+        } else {
+          shareLink = `twitter://post?message=${shareText}%20${shareUrl}`;
+        }
+      } else if (platform === "telegram") {
+        if (isAndroid()) {
+          shareLink = `intent://msg?text=${shareText}%20${shareUrl}#Intent;scheme=tg;package=org.telegram.messenger;end`;
+        } else {
+          shareLink = `tg://msg?text=${shareText}%20${shareUrl}`;
+        }
+      } else if (platform === "instagram") {
+        if (isAndroid()) {
+          shareLink = `intent://instagram://app#Intent;scheme=instagram;package=com.instagram.android;end`;
+        } else {
+          shareLink = `instagram://app`;
+        }
+      } else if (platform === "email") {
+        shareLink = `mailto:?subject=${encodeURIComponent("جوهرة الذكر")}&body=${shareText}%0A${shareUrl}`;
+      }
+      // فتح الرابط مباشرةً (إذا لم يكن التطبيق مثبتاً فلن يحدث شيء)
+      window.location.href = shareLink;
+    }
+    function initApp() {
+      checkDailyReset();
+      createDynamicBeads();
+      loadState();
+      setupEventListeners();
+      updateDashboard();
+      updateDhikrSelect();
+      renderCustomDhikrs();
+      applySettings();
+      showSection('tasbih');
+      window.addEventListener('resize', createDynamicBeads);
+    }
+    function createDynamicBeads() {
+      const container = document.getElementById('mainTasbih');
+      const beadCount = 33;
+      const radius = clamp(140, window.innerWidth * 0.45, 170);
+      const theta = (2 * Math.PI) / beadCount;
+      const dMax = 2 * radius * Math.sin(theta / 2);
+      const beadSize = clamp(30, dMax * 0.9, 36);
+      container.innerHTML = '';
+      for (let i = 0; i < beadCount; i++) {
+        const angle = (i * (2 * Math.PI)) / beadCount + Math.PI;
+        const bead = document.createElement('div');
+        bead.className = 'bead';
+        bead.style.width = `${beadSize}px`;
+        bead.style.height = `${beadSize}px`;
+        bead.style.left = `${Math.cos(angle) * radius + (container.offsetWidth / 2) - (beadSize / 2)}px`;
+        bead.style.top = `${Math.sin(angle) * radius + (container.offsetHeight / 2) - (beadSize / 2)}px`;
+        bead.addEventListener('click', (e) => handleBeadClick(i, e));
+        container.appendChild(bead);
+      }
+    }
+    function handleBeadClick(index, e) {
+      const dhikr = state.dhikrs.find(d => d.id === state.currentDhikr);
+      dhikr.count++;
+      dhikr.total++;
+      dhikr.daily++;
+      beadClickSound.play();
+      if ('vibrate' in navigator) navigator.vibrate(50);
+      animateBead(index);
+      createParticleEffect(e);
+      checkTargetReached(dhikr);
+      checkAchievements();
+      updateDashboard();
+      saveState();
+    }
+    function checkTargetReached(dhikr) {
+      if (dhikr.target && dhikr.count >= dhikr.target) {
+        dhikr.cycles++;
+        dhikr.count = 0;
+        targetReachedSound.play();
+        showAchievementAlert(`اكتملت دورة ${dhikr.name}! عدد الدورات: ${dhikr.cycles}`);
+      }
+    }
+    function animateBead(index) {
+      const container = document.getElementById('mainTasbih');
+      const bead = container.children[index];
+      if (bead) {
+        bead.classList.add('animate');
+        setTimeout(() => bead.classList.remove('animate'), 200);
+      }
+    }
+    function createParticleEffect(e) {
+      for (let i = 0; i < 5; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = `${e.clientX}px`;
+        particle.style.top = `${e.clientY}px`;
+        particle.style.width = `${Math.random() * 10 + 5}px`;
+        particle.style.height = `${Math.random() * 10 + 5}px`;
+        document.body.appendChild(particle);
+        setTimeout(() => particle.remove(), 800);
+      }
+    }
+    function checkAchievements() {
+      const milestones = [100, 500, 1000, 5000];
+      const total = state.dhikrs.find(d => d.id === state.currentDhikr).total;
+      milestones.forEach(ms => {
+        if (total >= ms && !state.achievements.includes(ms)) {
+          state.achievements.push(ms);
+          showAchievementAlert(`🏆 إنجاز جديد! وصلت إلى ${ms} مرة!`);
+        }
+      });
+    }
+    function showAchievementAlert(message) {
+      const alertDiv = document.createElement('div');
+      alertDiv.className = 'achievement-alert';
+      alertDiv.innerHTML = message;
+      document.body.appendChild(alertDiv);
+      setTimeout(() => alertDiv.remove(), 3000);
+    }
+    function saveState() {
+      localStorage.setItem('dhikrState', JSON.stringify(state));
+    }
+    function loadState() {
+      const saved = localStorage.getItem('dhikrState');
+      if (saved) state = JSON.parse(saved);
+      document.getElementById('fontFamilySelect').value = state.settings.fontFamily;
+      document.getElementById('fontSizeRange').value = state.settings.fontSize;
+      document.getElementById('autoSpeed').value = state.settings.autoSpeed;
+      document.getElementById('dhikrSelect').value = state.currentDhikr;
+      applySettings();
+    }
+    function applySettings() {
+      document.documentElement.style.setProperty('--primary', state.settings.themeColor);
+      document.body.style.fontFamily = state.settings.fontFamily;
+      document.body.style.fontSize = `${state.settings.fontSize}px`;
+      document.querySelectorAll('.theme-color').forEach(el => {
+        el.classList.toggle('active', el.getAttribute('data-color') === state.settings.themeColor);
+      });
+    }
+    function updateDashboard() {
+      const dhikr = state.dhikrs.find(d => d.id === state.currentDhikr);
+      const counterEl = document.getElementById('counter');
+      const progress = dhikr.target ? (dhikr.count / dhikr.target) * 100 : 0;
+      counterEl.textContent = `${dhikr.count}${dhikr.target ? ` / ${dhikr.target}` : ''}`;
+      counterEl.style.color = `hsl(${progress * 1.2}, 100%, 50%)`;
+      document.getElementById('dhikrPhrase').textContent = dhikr.phrase;
+      if (dhikr.target && dhikr.count >= dhikr.target) {
+        counterEl.classList.add('target-reached');
+      } else {
+        counterEl.classList.remove('target-reached');
+      }
+      document.getElementById('totalStat').textContent = dhikr.total;
+      document.getElementById('dailyStat').textContent = dhikr.daily;
+      document.getElementById('cyclesStat').textContent = dhikr.cycles;
+      document.getElementById('currentDhikrStat').textContent = `${dhikr.name} (${dhikr.phrase})`;
+    }
+    function showSection(sectionId) {
+      document.querySelectorAll('section').forEach(section => {
+        section.classList.remove('active-page');
+        section.style.display = 'none';
+      });
+      const activeSection = document.getElementById(sectionId);
+      activeSection.classList.add('active-page');
+      activeSection.style.display = 'flex';
+      if (sectionId === 'tasbih') {
+        requestAnimationFrame(createDynamicBeads);
+      }
+    }
+    function updateDhikrSelect() {
+      const select = document.getElementById('dhikrSelect');
+      select.innerHTML = state.dhikrs.map(d => `<option value="${d.id}">${d.name} (${d.phrase})</option>`).join('');
+      select.value = state.currentDhikr;
+    }
+    function renderCustomDhikrs() {
+      const list = document.getElementById('customDhikrList');
+      list.innerHTML = state.dhikrs.slice(3).map(d => `
+        <div class="custom-dhikr-item">
+          <span>${d.name} (${d.phrase}, ${d.target || 'غير محدد'})</span>
+          <button class="delete-dhikr-btn" data-id="${d.id}">حذف</button>
+        </div>
+      `).join('');
+    }
+    function checkDailyReset() {
+      const today = new Date().toDateString();
+      if (state.settings.lastResetDate !== today) {
+        state.dhikrs.forEach(d => {
+          d.daily = 0;
+          d.cycles = 0;
+        });
+        state.settings.lastResetDate = today;
+        saveState();
+      }
+    }
+    function clamp(min, value, max) {
+      return Math.min(Math.max(value, min), max);
+    }
+    function setupEventListeners() {
+      document.querySelectorAll('.nav-btns').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.nav-btns').forEach(el => el.classList.remove('active'));
+          btn.classList.add('active');
+          showSection(btn.getAttribute('data-section'));
+        });
+      });
+      document.querySelectorAll('.theme-color').forEach(color => {
+        color.addEventListener('click', () => {
+          state.settings.themeColor = color.getAttribute('data-color');
+          applySettings();
+          saveState();
+        });
+      });
+      document.querySelector('.btn-reset').addEventListener('click', () => {
+        const dhikr = state.dhikrs.find(d => d.id === state.currentDhikr);
+        dhikr.count = 0;
+        dhikr.daily = 0;
+        dhikr.cycles = 0;
+        updateDashboard();
+        saveState();
+      });
+      document.querySelector('.btn-auto').addEventListener('click', function() {
+        state.settings.autoTasbih = !state.settings.autoTasbih;
+        this.textContent = state.settings.autoTasbih ? "إيقاف التسبيح التلقائي ⏱️" : "التسبيح التلقائي ⏱️";
+        if (state.settings.autoTasbih) {
+          autoInterval = setInterval(() => {
+            const randomIndex = Math.floor(Math.random() * 33);
+            handleBeadClick(randomIndex, { clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 });
+          }, state.settings.autoSpeed * 1000);
+        } else {
+          clearInterval(autoInterval);
+        }
+        saveState();
+      });
+      document.getElementById('fontFamilySelect').addEventListener('change', function() {
+        state.settings.fontFamily = this.value;
+        applySettings();
+        saveState();
+      });
+      document.getElementById('fontSizeRange').addEventListener('input', function() {
+        state.settings.fontSize = this.value;
+        applySettings();
+        saveState();
+      });
+      document.getElementById('autoSpeed').addEventListener('change', function() {
+        state.settings.autoSpeed = clamp(0.5, parseFloat(this.value), 5);
+        if (state.settings.autoTasbih) {
+          clearInterval(autoInterval);
+          autoInterval = setInterval(() => {
+            const randomIndex = Math.floor(Math.random() * 33);
+            handleBeadClick(randomIndex, { clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 });
+          }, state.settings.autoSpeed * 1000);
+        }
+        saveState();
+      });
+      document.getElementById('dhikrSelect').addEventListener('change', function() {
+        state.currentDhikr = this.value;
+        updateDashboard();
+        saveState();
+      });
+      document.getElementById('addCustomDhikr').addEventListener('click', () => {
+        const name = document.getElementById('customDhikrName').value.trim();
+        const phrase = document.getElementById('customDhikrPhrase').value.trim();
+        const target = document.getElementById('customDhikrTarget').value.trim();
+        if (name && phrase) {
+          const id = `custom_${Date.now()}`;
+          state.dhikrs.push({
+            id,
+            name,
+            phrase,
+            count: 0,
+            total: 0,
+            daily: 0,
+            target: target ? parseInt(target) : null,
+            cycles: 0
+          });
+          document.getElementById('customDhikrName').value = '';
+          document.getElementById('customDhikrPhrase').value = '';
+          document.getElementById('customDhikrTarget').value = '';
+          updateDhikrSelect();
+          renderCustomDhikrs();
+          saveState();
+        }
+      });
+      document.getElementById('customDhikrList').addEventListener('click', (e) => {
+        if (e.target.classList.contains('delete-dhikr-btn')) {
+          const id = e.target.getAttribute('data-id');
+          state.dhikrs = state.dhikrs.filter(d => d.id !== id);
+          if (state.currentDhikr === id) state.currentDhikr = 'tasbih';
+          updateDhikrSelect();
+          renderCustomDhikrs();
+          updateDashboard();
+          saveState();
+        }
+      });
+      document.getElementById('mainTasbih').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('mainTasbih')) {
+          const randomIndex = Math.floor(Math.random() * 33);
+          handleBeadClick(randomIndex, e);
+        }
+      });
+      // حدث زر المشاركة
+      document.getElementById('shareApp').addEventListener('click', () => {
+        const shareData = {
+          title: 'مسبحتي',
+          text: 'تطبيق مسبحة ذكية رائع!',
+          url: 'https://example.com/app-download'
+        };
+        if (navigator.share) {
+          navigator.share(shareData).then(() => {
+            console.log('تمت المشاركة بنجاح');
+          }).catch((error) => {
+            console.error('خطأ في المشاركة:', error);
+          });
+        } else {
+          showShareModal();
+        }
+      });
+      // إعداد نافذة المشاركة المُخصصة
+      document.getElementById('closeShareModal').addEventListener('click', hideShareModal);
+      document.querySelectorAll('#shareModal .share-option').forEach(option => {
+        option.addEventListener('click', () => {
+          const platform = option.getAttribute('data-platform');
+          const shareText = encodeURIComponent(`${state.dhikrs.find(d => d.id === state.currentDhikr).phrase} - تطبيق جوهرة الذكر`);
+          const shareUrl = encodeURIComponent('https://example.com/app-download');
+          openDeepLink(platform, shareText, shareUrl);
+          hideShareModal();
+        });
+      });
+      // تشغيل صوت النقر لجميع الأزرار وعناصر المشاركة
+      document.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', playButtonSound);
+      });
+      document.querySelectorAll('.share-option').forEach(option => {
+        option.addEventListener('click', playButtonSound);
+      });
+    }
+    function showShareModal() {
+      const modal = document.getElementById('shareModal');
+      modal.style.display = 'flex';
+      setTimeout(() => {
+        modal.classList.add('show');
+      }, 10);
+    }
+    function hideShareModal() {
+      const modal = document.getElementById('shareModal');
+      modal.classList.remove('show');
+      setTimeout(() => {
+        modal.style.display = 'none';
+      }, 300);
+    }
+    initApp();
+  </script>
+</body>
+</html>
